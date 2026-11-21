@@ -24,6 +24,7 @@ class UserController extends Controller
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('name', 'like', '%' . trim((string) $request->query('search')) . '%');
             })
+            ->with('collections:id,title,description,genre,episodes,release_year,type')
             ->orderBy('id')
             ->get();
 
@@ -47,6 +48,8 @@ class UserController extends Controller
      */
     public function show(User $user): UserResource
     {
+        $user->load('collections:id,title,description,genre,episodes,release_year,type');
+
         return new UserResource($user);
     }
 
@@ -74,7 +77,7 @@ class UserController extends Controller
 
     public function favorites(User $user): JsonResponse
     {
-        $favorites = $user->favorites()
+        $collections = $user->collections()
             ->orderBy('media.id')
             ->get();
 
@@ -85,27 +88,42 @@ class UserController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                 ],
-                'favorites' => MediaResource::collection($favorites)->resolve(),
+                'collections' => MediaResource::collection($collections)->resolve(),
             ],
         ]);
     }
 
+    public function collections(User $user): JsonResponse
+    {
+        return $this->favorites($user);
+    }
+
     public function addFavorite(User $user, Media $media): JsonResponse
     {
-        $user->favorites()->syncWithoutDetaching([$media->id]);
+        $user->collections()->syncWithoutDetaching([$media->id]);
 
         return response()->json([
-            'message' => 'Media berhasil ditambahkan ke favorit.',
+            'message' => 'Media berhasil ditambahkan ke koleksi.',
             'data' => new MediaResource($media),
         ]);
     }
 
+    public function addToCollection(User $user, Media $media): JsonResponse
+    {
+        return $this->addFavorite($user, $media);
+    }
+
     public function removeFavorite(User $user, Media $media): JsonResponse
     {
-        $user->favorites()->detach($media->id);
+        $user->collections()->detach($media->id);
 
         return response()->json([
-            'message' => 'Media berhasil dihapus dari favorit.',
+            'message' => 'Media berhasil dihapus dari koleksi.',
         ]);
+    }
+
+    public function removeFromCollection(User $user, Media $media): JsonResponse
+    {
+        return $this->removeFavorite($user, $media);
     }
 }

@@ -22,6 +22,7 @@ class MediaController extends Controller
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('title', 'like', '%' . trim((string) $request->query('search')) . '%');
             })
+            ->with('collectedBy:id,name,email')
             ->orderBy('id')
             ->get();
 
@@ -45,6 +46,8 @@ class MediaController extends Controller
      */
     public function show(Media $media): MediaResource
     {
+        $media->load('collectedBy:id,name,email');
+
         return new MediaResource($media);
     }
 

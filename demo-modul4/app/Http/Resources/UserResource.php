@@ -18,6 +18,18 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'collections' => $this->relationLoaded('collections')
+                ? $this->collections
+                    ->map(fn ($media) => [
+                        'id' => $media->id,
+                        'title' => $media->title,
+                        'genre' => $media->genre,
+                        'episodes' => $media->episodes,
+                        'release_year' => $media->release_year,
+                        'type' => $media->type,
+                    ])
+                    ->values()
+                : [],
         ];
     }
 }

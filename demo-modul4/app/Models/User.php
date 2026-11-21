@@ -49,4 +49,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Media::class, 'favorites', 'user_id', 'media_id')
             ->withTimestamps();
     }
+
+    public function collections(): BelongsToMany
+    {
+        return $this->favorites();
+    }
 }

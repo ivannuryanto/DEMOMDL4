@@ -22,6 +22,15 @@ class MediaResource extends JsonResource
             'episodes' => $this->episodes,
             'release_year' => $this->release_year,
             'type' => $this->type,
+            'collected_by' => $this->relationLoaded('collectedBy')
+                ? $this->collectedBy
+                    ->map(fn ($user) => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ])
+                    ->values()
+                : [],
         ];
     }
 }
